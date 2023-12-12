@@ -1,3 +1,4 @@
+using System.Text.Json;
 using AutoMapper;
 using engine.Data;
 using engine.Dto;
@@ -59,6 +60,15 @@ public class TutorController : ControllerBase
             SessionLengthInMinutes = sessionDto.SessionLengthInMinutes
         };
         _logger.LogInformation("Converted session data => {}", session);
+
+        string jsonData = JsonSerializer.Serialize(session);
+        using (HttpClient client = new HttpClient())
+        {
+            StringContent content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync("http://localhost:8089/cal/session", content);
+            _logger.LogInformation("{}", response.StatusCode);
+        }
+
         return Ok(200);
     }
 }
