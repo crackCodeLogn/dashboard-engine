@@ -16,5 +16,6 @@ public class AutoMapperProfile : Profile
         .ReverseMap();
         CreateMap<Session, SessionDto>();
         CreateMap<SessionData, SessionDataDto>();
+        CreateMap<ExpiryData, ExpiryDataDto>();
     }
 }

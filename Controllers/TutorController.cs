@@ -73,6 +73,28 @@ public class TutorController : ControllerBase
         return Ok(200);
     }
 
+    [HttpPost("expiryData")]
+    public async Task<IActionResult> PostExpiryDataOnCalendarAsync([FromBody] ExpiryDataDto expiryDataDto)
+    {
+        _logger.LogInformation("Received expiry data from UI => {}", expiryDataDto);
+        var expiryData = new ExpiryData
+        {
+            Date = expiryDataDto.Date,
+            Data = expiryDataDto.Data
+        };
+        _logger.LogInformation("Converted expiry data => {}", expiryData);
+
+        string jsonData = JsonSerializer.Serialize(expiryData);
+        using (HttpClient client = new())
+        {
+            StringContent content = new(jsonData, System.Text.Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync("http://localhost:8089/cal/expiry", content);
+            _logger.LogInformation("{}", response.StatusCode);
+        }
+
+        return Ok(200);
+    }
+
     [HttpPost("sessionData")]
     public async Task<IActionResult> CaptureSessionDataForDiskWrite([FromBody] SessionDataDto sessionDataDto)
     {
