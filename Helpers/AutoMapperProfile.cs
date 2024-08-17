@@ -15,5 +15,6 @@ public class AutoMapperProfile : Profile
         .ForMember(p => p.Name, opt => opt.MapFrom(src => src.SessionSubject))
         .ReverseMap();
         CreateMap<Session, SessionDto>();
+        CreateMap<SessionData, SessionDataDto>();
     }
 }

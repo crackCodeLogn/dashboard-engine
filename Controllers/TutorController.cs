@@ -5,6 +5,7 @@ using engine.Dto;
 using engine.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
 
 namespace engine.Controllers;
 
@@ -70,5 +71,39 @@ public class TutorController : ControllerBase
         }
 
         return Ok(200);
+    }
+
+    [HttpPost("sessionData")]
+    public async Task<IActionResult> CaptureSessionDataForDiskWrite([FromBody] SessionDataDto sessionDataDto)
+    {
+        _logger.LogInformation("Received session-data from UI => {}", sessionDataDto);
+        var sessionData = new SessionData
+        {
+            Mode = (await ModeRepository.GetAllModesAsync()).First(p => p.Id == sessionDataDto.ModeId),
+            Student = sessionDataDto.Student,
+            Subject = (await SubjectRepository.GetAllSubjectsAsync()).First(p => p.Id == sessionDataDto.SubjectId),
+            SessionDate = sessionDataDto.SessionDate,
+            Data = sessionDataDto.Data,
+        };
+        _logger.LogInformation("Converted session-data => {}", sessionData);
+
+        var fileTitle = GetFileTitle(sessionData);
+        _logger.LogInformation("Generated file title => {}", fileTitle);
+
+        string filePath = Path.Combine("/home/v2/theTempest", fileTitle);
+        await System.IO.File.WriteAllTextAsync(filePath, sessionData.Data, System.Text.Encoding.UTF8);
+
+        return Ok(200);
+    }
+
+    private static String GetFileTitle(SessionData sessionData)
+    {
+        return string.Join(".",
+            sessionData.Mode.SessionMode.Contains("Varsity") ? "session" : "session-direct",
+            sessionData.Student,
+            sessionData.Subject.SessionSubject,
+            sessionData.SessionDate.Date.ToString("yyyyMMdd"),
+            "txt"
+        );
     }
 }
