@@ -3,9 +3,7 @@ using AutoMapper;
 using engine.Data;
 using engine.Dto;
 using engine.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualBasic;
 
 namespace engine.Controllers;
 
@@ -71,6 +69,36 @@ public class TutorController : ControllerBase
         }
 
         return Ok(200);
+    }
+
+    [HttpGet("sessionData")]
+    public async Task<IActionResult> GetLatestSessionDataOfStudent([FromQuery] string student)
+    {
+        _logger.LogInformation("Received request to get latest session data of {}", student);
+
+        var filePath = "";
+        var fileName = "";
+        var fileData = "";
+        string baseFolder = "/home/v2/theTempest";
+        if (Directory.Exists(baseFolder))
+        {
+            var list = Directory.GetFiles(baseFolder)
+                                .Where(file => Path.GetFileName(file).Contains(student))
+                                .Select(file => new FileInfo(file))
+                                .OrderByDescending(file => file.LastWriteTime)
+                                .Select(file => file.FullName)
+                                .ToList();
+
+            if (list.Count != 0) filePath = list.First();
+        }
+        _logger.LogInformation("Responding with information from file at => {}", filePath);
+        if (filePath.Length > 0)
+        {
+            fileName = filePath.Substring(filePath.LastIndexOf('/') + 1);
+            fileData = System.IO.File.ReadAllText(filePath);
+        }
+
+        return Ok(new { FileName = fileName, FileData = fileData });
     }
 
     [HttpPost("expiryData")]
