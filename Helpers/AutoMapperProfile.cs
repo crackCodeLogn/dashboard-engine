@@ -17,5 +17,6 @@ public class AutoMapperProfile : Profile
         CreateMap<Session, SessionDto>();
         CreateMap<SessionData, SessionDataDto>();
         CreateMap<ExpiryData, ExpiryDataDto>();
+        CreateMap<LibraryData, LibraryDataDto>();
     }
 }

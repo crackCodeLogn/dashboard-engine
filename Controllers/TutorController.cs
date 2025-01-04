@@ -123,6 +123,30 @@ public class TutorController : ControllerBase
         return Ok(200);
     }
 
+    [HttpPost("lib")]
+    public async Task<IActionResult> PostLibDataOnCalendarAsync([FromBody] LibraryDataDto libraryDataDto)
+    {
+        _logger.LogInformation("Received lib data from UI => {}", libraryDataDto);
+        var libraryData = new LibraryData
+        {
+            BookName = libraryDataDto.BookName,
+        };
+        if (libraryDataDto.BorrowDate.HasValue) libraryData.BorrowDate = libraryDataDto.BorrowDate;
+        if (libraryDataDto.ReturnDate.HasValue) libraryData.ReturnDate = libraryDataDto.ReturnDate;
+        if (libraryDataDto.ReturnedDate.HasValue) libraryData.ReturnedDate = libraryDataDto.ReturnedDate;
+
+        _logger.LogInformation("Converted lib data => {}", libraryData);
+        string jsonData = JsonSerializer.Serialize(libraryData);
+        using (HttpClient client = new())
+        {
+            StringContent content = new(jsonData, System.Text.Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync("http://localhost:8089/cal/lib", content);
+            _logger.LogInformation("{}", response.StatusCode);
+        }
+
+        return Ok(200);
+    }
+
     [HttpPost("sessionData")]
     public async Task<IActionResult> CaptureSessionDataForDiskWrite([FromBody] SessionDataDto sessionDataDto)
     {
